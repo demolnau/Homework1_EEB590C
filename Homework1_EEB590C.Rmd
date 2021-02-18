@@ -1,12 +1,14 @@
 ---
-title: "Homework1_EEB590C"
-author: "Devin Molnau"
+title: "Homework 1 - EEB590C"
+author: "Devin Molnau, Holly Loper, Elizabeth McMurchie "
 date: "February 18, 2021"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 
 # EEB590C -Homework 1
