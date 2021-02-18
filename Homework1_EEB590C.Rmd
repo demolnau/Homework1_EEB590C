@@ -1,13 +1,12 @@
 ---
-title: "Homework 1 - EEB 590C"
-output: html_notebook
+title: "Homework1_EEB590C"
+author: "Devin Molnau"
+date: "February 18, 2021"
+output: pdf_document
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r}
-install.packages("rmarkdown")
 ```
 
 # EEB590C -Homework 1
