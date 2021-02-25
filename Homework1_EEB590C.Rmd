@@ -64,6 +64,58 @@ Perform 100 simulations under each condition.
 #MAKE DATAFRAME OF 100 of 100
 #FILL THE DATAFRAME ROW BY ROW WITH LIST OF 100
 
+
+#load in libraries
+#Random Uncorrelated Data List
+uncor_data <- list()
+sum_slopes_uncor_data <- 0
+
+for (i in 1:100) {
+  tmp <- list(rnorm(100, mean = 0, sd = 0.3)) #generate 100 uncorrelated points
+  name <- paste('simulatation ', i, sep='') #make name for indexing later
+  uncor_data[[name]] <- tmp # add simulation to list
+  
+  tmp_model <- lm(1:100 ~ tmp[[1]]) #make linear model 
+  uncor_data[[name]][["linear_model"]] <- tmp_model #add linear model to list 
+  
+  uncor_data[[name]][["summary"]] <- summary(tmp_model) #summarize the fit of the linear model
+  
+  uncor_data[[name]][["anova"]] <- anova(tmp_model) #get model term tests
+  
+  sum_slopes_uncor_data <- sum_slopes_uncor_data + uncor_data[[name]][["linear_model"]][["coefficients"]][["tmp[[1]]"]]
+}
+
+#unlisted <- unlist(uncor_data[["simulatation 1"]])
+
+#ununlisted <- unlist(unlisted)
+
+#sum_slope_uncor_data_new <- lapply(uncor_data[[]][["linear_model"]][["coefficients"]][["tmp[[1]]"]], FUN = sum)
+
+#sum_slope_uncor_data <- tapply(unlist(uncor_data[[]]), unlisted[["linear_model.coefficients.tmp[[1]]"]], lengths(uncor_data[[]])), FUN = sum)
+
+#Random Correlated Data List
+cor_data <- list()
+corr.val <- 0.9
+sum_slopes_cor_data <- 0
+
+for (i in 1:100) {
+  
+  tmp <- list(rmvnorm(100, mean=c(0,0), sigma=matrix(c(1,corr.val,corr.val,1), 2, 2)))#generate 100 correlated points
+  
+  name <- paste('simulatation ', i, sep='') #make name for indexing later
+  cor_data[[name]] <- tmp # add simulation to list
+  
+  tmp_model <- lm(tmp[[1]][,1] ~ tmp[[1]][,2]) #make linear model 
+  cor_data[[name]][["linear_model"]] <- tmp_model #add linear model to list 
+  
+  cor_data[[name]][["summary"]] <- summary(tmp_model) #summarize the fit of the linear model
+  
+  cor_data[[name]][["anova"]] <- anova(tmp_model) #get model term tests
+  
+  sum_slopes_cor_data <- sum_slopes_cor_data + cor_data[[name]][["linear_model"]][["coefficients"]][["tmp[[1]][, 2]"]]
+}
+
+
 ```
 
 Run the linear models on all datasets to confirm that on average, the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met. (HINT: this requires determining an appropriate summary measure extracted from the linear model).
