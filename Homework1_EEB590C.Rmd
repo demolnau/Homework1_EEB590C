@@ -6,8 +6,9 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("formatR")
 opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 
@@ -33,33 +34,80 @@ Select some form of linear model containing a single dependent variable (continu
 
 Next, simulate two datasets: the first with no relationship between X & Y, and the second with some positive association between X & Y.
 ```{r}
-#TODO
 
+#data set with no relationship between x & Y
+set.seed(2) 
+x1<-rnorm(100, mean = 0, sd = 0.3)
+set.seed(3)
+y1<-rnorm(100, mean = 3, sd = 0.3)
+plot(x1,y1)
+
+#data set with positive association between x & Y
+#install.packages("mvtnorm")
+library(mvtnorm) 
+corr.val <- .9
+pos_cor_data <- rmvnorm(n=100,mean=c(0,0),sigma=matrix(c(1,corr.val,corr.val,1),2,2)) 
+cor(pos_cor_data)
+
+plot(pos_cor_data)
 ```
 
 Perform 100 simulations under each condition.
 ```{r}
 #TODO
+#DOES THIS MEAN RESAMPLING OR DOES THIS MEAN INSTEAD OF 500 datapoints in each, there should be only 100?
 ```
 
 Run the linear models on all datasets to confirm that on average, the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met. (HINT: this requires determining an appropriate summary measure extracted from the linear model).
 ```{r}
-#TODO
-
+#model 1 - uncorrelated
+lm(y1~x1)
+model1<-lm(y1~x1)
+summary(model1)	#pvalue of =  0.1593 --> 0.1593 > 0.05 significance threshold
 ```
+ The pvalue of 0.1593 indicating that there is no significant linear relationship between x1 and y1 of model1. 
 
- Devise a permutation procedure to evaluate the above linear model.
 ```{r}
-#TODO
+#model 2 - positively correlated model
+
+lm(pos_cor_data[,2]~pos_cor_data[,1])
+model2<-lm(pos_cor_data[,2]~pos_cor_data[,1])
+summary(model2)	
 ```
- Write code for this permutation procedure.
+There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value of 2.2e-16.
+#### Question 2: 
+
+ Devise a permutation procedure to evaluate the above linear model. Write code for this permutation procedure.
 ```{r}
-#TODO
+#install.packages("RRPP")
+library(RRPP)
+ourdata<-rrpp.data.frame(pos_cor_data[,2], pos_cor_data[,1])
+model3<-lm.rrpp(pos_cor_data[,2]~pos_cor_data[,1], print.progress = FALSE, data = ourdata)
+anova(model3)
 
 ```
+
  Next, devise a SECOND implementation of the same permutation procedure (ie, code the procedure in a different manner). For a single dataset compare the two implementations for their computational performance.
+
 ```{r}
-#TODO
+F.obs<-anova(model2)$F[[1]]  #Find Test value and save
+permute<-1999
+F.rand.vec<-array(NA,(permute+1))
+F.rand.vec[permute+1]<-F.obs
+ Y = pos_cor_data[,2]
+ X1 = pos_cor_data[,1]
+for(i in 1:permute){
+  ###Shuffle Data
+	y.rand<-sample(Y)	#Resample vector 
+	F.rand.vec[i]<-anova(lm(y.rand~X1))$F[[1]]  
+}  
+F.obs
+P.Ftest<-rank(F.rand.vec[permute+1])/(permute+1)
+P.Ftest
+####Plot
+hist(F.rand.vec,40,freq=T,col="gray")
+segments(F.obs, 0, F.obs, 50)  ##Plot Observed value
 ```
+
  
 Summarize your findings via comments in the code (e.g., which approach was faster? Which components of the slower approach could be improved, etc.).
