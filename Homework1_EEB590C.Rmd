@@ -24,24 +24,25 @@ This assignment is due prior to class in week 6. You are to self-select and work
 
 ### Homework Breakdown:
 
-Select some form of linear model containing a single dependent variable (continuous) and at least 1 independent variable. 
-
-
-```{r}
-#TODO
-#DO WE NEED TO DECLARE A LINEAR MODEL HERE? SHOULD WE REMOVE THIS BREAK? wHAT IS CONSIDERED A LINEAR MODEL? 
-```
-
-
-Next, simulate two datasets: the first with no relationship between X & Y, and the second with some positive association between X & Y.
+Select some form of linear model containing a single dependent variable (continuous) and at least 1 independent variable. Next, simulate two datasets: the first with no relationship between X & Y, and the second with some positive association between X & Y.
 ```{r}
 
 #data set with no relationship between x & Y
-set.seed(2) 
-x1<-rnorm(100, mean = 0, sd = 0.3)
-set.seed(3)
-y1<-rnorm(100, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
-plot(x1,y1)
+
+random_corr_gen<- function(elements) {
+  set.seed(2) 
+  x1<-rnorm(elements, mean = 0, sd = 0.3)# this could also be simply 1:100
+  set.seed(3)
+  y1<-rnorm(elements, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
+  uncor_dataframe<-data.frame(x1,y1)
+}
+#set.seed(2) 
+#x1<-rnorm(100, mean = 0, sd = 0.3)# this could also be simply 1:100
+#set.seed(3)
+#y1<-rnorm(100, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
+#uncor_data<-data.frame(x1,y1)
+uncor_data<-random_corr_gen(100)
+plot(uncor_data)
 
 #TODO ADD LABELS AND TITLE
 ```
@@ -58,62 +59,20 @@ plot(pos_cor_data)
 ```
 
 Perform 100 simulations under each condition.
+First we simulate 100 noncorrelated x and y dataframes and put it a list called uncor_data_sim.
 ```{r}
-#TODO
-#DOES THIS MEAN RESAMPLING OR DOES THIS MEAN INSTEAD OF 500 datapoints in each, there should be only 100?
-#MAKE DATAFRAME OF 100 of 100
-#FILL THE DATAFRAME ROW BY ROW WITH LIST OF 100
-
-
-#load in libraries
 #Random Uncorrelated Data List
-uncor_data <- list()
-sum_slopes_uncor_data <- 0
+uncor_data_sim<-replicate(100,random_corr_gen(100), simplify = "list")
+#uncor_data_sim[,1]
+#uncor_data_sim[,1]$x1
 
-for (i in 1:100) {
-  tmp <- list(rnorm(100, mean = 0, sd = 0.3)) #generate 100 uncorrelated points
-  name <- paste('simulatation ', i, sep='') #make name for indexing later
-  uncor_data[[name]] <- tmp # add simulation to list
-  
-  tmp_model <- lm(1:100 ~ tmp[[1]]) #make linear model 
-  uncor_data[[name]][["linear_model"]] <- tmp_model #add linear model to list 
-  
-  uncor_data[[name]][["summary"]] <- summary(tmp_model) #summarize the fit of the linear model
-  
-  uncor_data[[name]][["anova"]] <- anova(tmp_model) #get model term tests
-  
-  sum_slopes_uncor_data <- sum_slopes_uncor_data + uncor_data[[name]][["linear_model"]][["coefficients"]][["tmp[[1]]"]]
-}
 
-#unlisted <- unlist(uncor_data[["simulatation 1"]])
-
-#ununlisted <- unlist(unlisted)
-
-#sum_slope_uncor_data_new <- lapply(uncor_data[[]][["linear_model"]][["coefficients"]][["tmp[[1]]"]], FUN = sum)
-
-#sum_slope_uncor_data <- tapply(unlist(uncor_data[[]]), unlisted[["linear_model.coefficients.tmp[[1]]"]], lengths(uncor_data[[]])), FUN = sum)
 
 #Random Correlated Data List
-cor_data <- list()
-corr.val <- 0.9
-sum_slopes_cor_data <- 0
+cor_data_sim<-replicate(100,rmvnorm(100, mean=c(0,0), sigma=matrix(c(1,corr.val,corr.val,1), 2, 2)), simplify ="list")
+#cor_data_sim
+#cor_data_sim[,1]
 
-for (i in 1:100) {
-  
-  tmp <- list(rmvnorm(100, mean=c(0,0), sigma=matrix(c(1,corr.val,corr.val,1), 2, 2)))#generate 100 correlated points
-  
-  name <- paste('simulatation ', i, sep='') #make name for indexing later
-  cor_data[[name]] <- tmp # add simulation to list
-  
-  tmp_model <- lm(tmp[[1]][,1] ~ tmp[[1]][,2]) #make linear model 
-  cor_data[[name]][["linear_model"]] <- tmp_model #add linear model to list 
-  
-  cor_data[[name]][["summary"]] <- summary(tmp_model) #summarize the fit of the linear model
-  
-  cor_data[[name]][["anova"]] <- anova(tmp_model) #get model term tests
-  
-  sum_slopes_cor_data <- sum_slopes_cor_data + cor_data[[name]][["linear_model"]][["coefficients"]][["tmp[[1]][, 2]"]]
-}
 
 
 ```
