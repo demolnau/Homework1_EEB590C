@@ -29,6 +29,7 @@ Select some form of linear model containing a single dependent variable (continu
 
 ```{r}
 #TODO
+#DO WE NEED TO DECLARE A LINEAR MODEL HERE? SHOULD WE REMOVE THIS BREAK? wHAT IS CONSIDERED A LINEAR MODEL? 
 ```
 
 
@@ -39,9 +40,13 @@ Next, simulate two datasets: the first with no relationship between X & Y, and t
 set.seed(2) 
 x1<-rnorm(100, mean = 0, sd = 0.3)
 set.seed(3)
-y1<-rnorm(100, mean = 3, sd = 0.3)
+y1<-rnorm(100, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
 plot(x1,y1)
 
+#TODO ADD LABELS AND TITLE
+```
+
+```{r}
 #data set with positive association between x & Y
 #install.packages("mvtnorm")
 library(mvtnorm) 
@@ -56,6 +61,9 @@ Perform 100 simulations under each condition.
 ```{r}
 #TODO
 #DOES THIS MEAN RESAMPLING OR DOES THIS MEAN INSTEAD OF 500 datapoints in each, there should be only 100?
+#MAKE DATAFRAME OF 100 of 100
+#FILL THE DATAFRAME ROW BY ROW WITH LIST OF 100
+
 ```
 
 Run the linear models on all datasets to confirm that on average, the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met. (HINT: this requires determining an appropriate summary measure extracted from the linear model).
@@ -64,6 +72,8 @@ Run the linear models on all datasets to confirm that on average, the patterns f
 lm(y1~x1)
 model1<-lm(y1~x1)
 summary(model1)	#pvalue of =  0.1593 --> 0.1593 > 0.05 significance threshold
+
+#APPLY STATEMENT ON EACH LIST Of 100 ELEMENTS
 ```
  The pvalue of 0.1593 indicating that there is no significant linear relationship between x1 and y1 of model1. 
 
@@ -73,6 +83,8 @@ summary(model1)	#pvalue of =  0.1593 --> 0.1593 > 0.05 significance threshold
 lm(pos_cor_data[,2]~pos_cor_data[,1])
 model2<-lm(pos_cor_data[,2]~pos_cor_data[,1])
 summary(model2)	
+
+#APPLY STATEMENT ON EACH LIST Of 100 ELEMENTS
 ```
 There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value of 2.2e-16.
 #### Question 2: 
