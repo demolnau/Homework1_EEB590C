@@ -36,66 +36,66 @@ random_corr_gen<- function(elements) {
   y1<-rnorm(elements, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
   uncor_dataframe<-data.frame(x1,y1)
 }
-#set.seed(2) 
-#x1<-rnorm(100, mean = 0, sd = 0.3)# this could also be simply 1:100
-#set.seed(3)
-#y1<-rnorm(100, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
-#uncor_data<-data.frame(x1,y1)
+
 uncor_data<-random_corr_gen(100)
 plot(uncor_data)
 
-#TODO ADD LABELS AND TITLE
+#TODO ADD LABELS AND TITLE TO PLOT
 ```
 
 ```{r}
 #data set with positive association between x & Y
-#install.packages("mvtnorm")
 library(mvtnorm) 
-corr.val <- .9
-pos_cor_data <- rmvnorm(n=100,mean=c(0,0),sigma=matrix(c(1,corr.val,corr.val,1),2,2)) 
-cor(pos_cor_data)
+library(tidyverse)
 
-plot(pos_cor_data)
+corr.val <- .9
+pos_cor_gen<- function(elements) {
+  cor_data<-data.frame(rmvnorm(n=elements,mean=c(0,0),sigma=matrix(c(1,corr.val,corr.val,1),2,2)))
+  names(cor_data)[1]<-"x1"
+  names(cor_data)[2]<- "y1"
+  return(cor_data)
+}
+
+pos_cor_data<-pos_cor_gen(100)
+
+
 ```
 
 Perform 100 simulations under each condition.
+
 First we simulate 100 noncorrelated x and y dataframes and put it a list called uncor_data_sim.
 ```{r}
 #Random Uncorrelated Data List
-uncor_data_sim<-replicate(100,random_corr_gen(100), simplify = "list")
-#uncor_data_sim[,1]
-#uncor_data_sim[,1]$x1
+uncor_data_sim<-replicate(100,random_corr_gen(100), simplify = FALSE)
+```
 
 
-
+Then we simulate 100 lists of the correlated data, called cor_data_sim.
+```{r}
 #Random Correlated Data List
-cor_data_sim<-replicate(100,rmvnorm(100, mean=c(0,0), sigma=matrix(c(1,corr.val,corr.val,1), 2, 2)), simplify ="list")
+cor_data_sim<-replicate(100, pos_cor_gen(100), simplify = FALSE)
+
 #cor_data_sim
-#cor_data_sim[,1]
-
-
-
+#cor_data_sim[[1]] #shows the first list of 100 elements
+#cor_data_sim[[1]][,1] #shows column x of the first list of 100 elements
 ```
 
 Run the linear models on all datasets to confirm that on average, the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met. (HINT: this requires determining an appropriate summary measure extracted from the linear model).
+
+Below is the linear model lm function applied to each list of x and y in the uncorrelated dataset. The summary of the linear model is saved tp summary_lm_uncor_tests.
 ```{r}
 #model 1 - uncorrelated
-lm(y1~x1)
-model1<-lm(y1~x1)
-summary(model1)	#pvalue of =  0.1593 --> 0.1593 > 0.05 significance threshold
-
-#APPLY STATEMENT ON EACH LIST Of 100 ELEMENTS
+lm_uncor_tests<-lapply(uncor_data_sim,lm, formula = y1 ~ x1)
+summary_lm_uncor_tests<-lapply(lm_uncor_tests,summary)
+#TODO -> sum up the pvalues that were less than 0.05
 ```
- The pvalue of 0.1593 indicating that there is no significant linear relationship between x1 and y1 of model1. 
+Next is the  linar model lm applied to each list of the positively correlated dataset.
 
 ```{r}
 #model 2 - positively correlated model
-
-lm(pos_cor_data[,2]~pos_cor_data[,1])
-model2<-lm(pos_cor_data[,2]~pos_cor_data[,1])
-summary(model2)	
-
-#APPLY STATEMENT ON EACH LIST Of 100 ELEMENTS
+lm_cor_tests<-lapply(cor_data_sim,lm, formula = y1~x1)
+summary_lm_cor_tests<-lapply(lm_cor_tests,summary)
+#TODO -> sum up the pvalues that were less than 0.05
 ```
 There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value of 2.2e-16.
 #### Question 2: 
@@ -113,24 +113,33 @@ anova(model3)
  Next, devise a SECOND implementation of the same permutation procedure (ie, code the procedure in a different manner). For a single dataset compare the two implementations for their computational performance.
 
 ```{r}
-F.obs<-anova(model2)$F[[1]]  #Find Test value and save
-permute<-1999
-F.rand.vec<-array(NA,(permute+1))
-F.rand.vec[permute+1]<-F.obs
- Y = pos_cor_data[,2]
- X1 = pos_cor_data[,1]
-for(i in 1:permute){
-  ###Shuffle Data
-	y.rand<-sample(Y)	#Resample vector 
-	F.rand.vec[i]<-anova(lm(y.rand~X1))$F[[1]]  
-}  
-F.obs
-P.Ftest<-rank(F.rand.vec[permute+1])/(permute+1)
-P.Ftest
-####Plot
-hist(F.rand.vec,40,freq=T,col="gray")
-segments(F.obs, 0, F.obs, 50)  ##Plot Observed value
+# F.obs<-anova(summary_lm_cor_tests)$F[[1]]  #Find Test value and save
+# permute<-1999
+# F.rand.vec<-array(NA,(permute+1))
+# F.rand.vec[permute+1]<-F.obs
+#  Y = pos_cor_data[,2]
+#  X1 = pos_cor_data[,1]
+# for(i in 1:permute){
+#   ###Shuffle Data
+# 	y.rand<-sample(Y)	#Resample vector 
+# 	F.rand.vec[i]<-anova(lm(y.rand~X1))$F[[1]]  
+# }  
+# F.obs
+# P.Ftest<-rank(F.rand.vec[permute+1])/(permute+1)
+# P.Ftest
+# ####Plot
+# hist(F.rand.vec,40,freq=T,col="gray")
+# segments(F.obs, 0, F.obs, 50)  ##Plot Observed value
+
+#TODO --> make this a nice replcate or apply statement
 ```
 
  
 Summarize your findings via comments in the code (e.g., which approach was faster? Which components of the slower approach could be improved, etc.).
+
+```{r}
+#TODO
+#time the two methods of permutations
+# https://www.rdocumentation.org/packages/microbenchmark/versions/1.4-7/topics/microbenchmark
+# https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/system.time
+```
