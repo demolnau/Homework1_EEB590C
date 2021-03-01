@@ -31,9 +31,9 @@ Select some form of linear model containing a single dependent variable (continu
 #data set with no relationship between x & Y
 
 random_corr_gen<- function(elements) {
-  set.seed(2) 
+  #set.seed(2) 
   x1<-rnorm(elements, mean = 0, sd = 0.3)# this could also be simply 1:100
-  set.seed(3)
+  #set.seed(3)
   y1<-rnorm(elements, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
   uncor_dataframe<-data.frame(x1,y1)
 }
@@ -93,13 +93,18 @@ lm_uncor_tests<-lapply(uncor_data_sim,lm, formula = y1 ~ x1)
 summary_lm_uncor_tests<-lapply(lm_uncor_tests,summary)
 anova_lm_uncor_tests<-lapply(lm_uncor_tests,anova)
 
-#sum_pvalue_uncor <- sum(lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1], length(anova_lm_uncor_tests[[]])))
 
-#sum_pvalue_uncor <- do.call(sum, anova_lm_uncor_tests[[1]][["Pr(>F)"]][1])
+sum_pvalue_uncor_tests <- 0
+count_pvalue_uncor_tests <- 0
 
-#sum_pvalue_uncor <- lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1],sum)
+for (i in 1:length(anova_lm_uncor_tests)) {
+  if(anova_lm_uncor_tests[[i]][["Pr(>F)"]][1] > 0.05){
+    count_pvalue_uncor_tests <- count_pvalue_uncor_tests + 1
+  sum_pvalue_uncor_tests <- sum_pvalue_uncor_tests + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
+}
+}
 
-anova_lm_uncor_tests[[1]]
+average_pvalue_uncor_tests <- sum_pvalue_uncor_tests/count_pvalue_uncor_tests
 
 #TODO -> sum up the pvalues that were less than 0.05
 ```
@@ -109,10 +114,24 @@ Next is the  linar model lm applied to each list of the positively correlated da
 #model 2 - positively correlated model
 lm_cor_tests<-lapply(cor_data_sim,lm, formula = y1~x1)
 summary_lm_cor_tests<-lapply(lm_cor_tests,summary)
-anova_lm_cor_tests<-lapply(lm_uncor_tests,anova)
+anova_lm_cor_tests<-lapply(lm_cor_tests,anova)
+
+
+sum_pvalue_cor_tests <- 0
+count_pvalue_cor_tests <- 0
+
+for (i in 1:length(anova_lm_cor_tests)) {
+    if(anova_lm_cor_tests[[i]][["Pr(>F)"]][1] > 0.05){
+      count_pvalue_cor_tests <- count_pvalue_cor_tests + 1
+  sum_pvalue_cor_tests <- sum_pvalue_cor_tests + anova_lm_cor_tests[[i]][["Pr(>F)"]][1]
+    }
+}
+
+average_pvalue_cor_tests <- sum_pvalue_cor_tests/count_pvalue_cor_tests
 #TODO -> sum up the pvalues that were less than 0.05
 ```
 There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value of 2.2e-16.
+
 #### Question 2: 
 
  Devise a permutation procedure to evaluate the above linear model. Write code for this permutation procedure.
