@@ -6,6 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
+rm(list=ls()) #remove unwanted variables and start on clear slate
 library(knitr)
 knitr::opts_chunk$set(echo = TRUE)
 #install.packages("formatR")
@@ -38,7 +39,10 @@ random_corr_gen<- function(elements) {
 }
 
 uncor_data<-random_corr_gen(100)
-plot(uncor_data)
+plot(uncor_data,
+    main = "Uncorrelated Data",  
+    xlab = "X (Independent Varible)", 
+    ylab = "Y (Dependent Varible)")
 
 #TODO ADD LABELS AND TITLE TO PLOT
 ```
@@ -87,6 +91,14 @@ Below is the linear model lm function applied to each list of x and y in the unc
 #model 1 - uncorrelated
 lm_uncor_tests<-lapply(uncor_data_sim,lm, formula = y1 ~ x1)
 summary_lm_uncor_tests<-lapply(lm_uncor_tests,summary)
+anova_lm_uncor_tests<-lapply(lm_uncor_tests,anova)
+
+sum_pvalue_uncor <- sum(lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1], length(anova_lm_uncor_tests[[]])))
+
+#sum_pvalue_uncor <- do.call(sum, anova_lm_uncor_tests[[1]][["Pr(>F)"]][1])
+
+sum_pvalue_uncor <- lapply(unlist(anova_lm_uncor_tests[[]][["Pr(>F)"]][1]),sum)
+
 #TODO -> sum up the pvalues that were less than 0.05
 ```
 Next is the  linar model lm applied to each list of the positively correlated dataset.
@@ -95,6 +107,7 @@ Next is the  linar model lm applied to each list of the positively correlated da
 #model 2 - positively correlated model
 lm_cor_tests<-lapply(cor_data_sim,lm, formula = y1~x1)
 summary_lm_cor_tests<-lapply(lm_cor_tests,summary)
+anova_lm_cor_tests<-lapply(lm_uncor_tests,anova)
 #TODO -> sum up the pvalues that were less than 0.05
 ```
 There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value of 2.2e-16.
