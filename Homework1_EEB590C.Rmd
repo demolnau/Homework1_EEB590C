@@ -67,7 +67,7 @@ pos_cor_data<-pos_cor_gen(100)
 
 Perform 100 simulations under each condition.
 
-First we simulate 100 noncorrelated x and y dataframes and put it a list called uncor_data_sim.
+First we simulate 100 uncorrelated x and y dataframes and put it a list called uncor_data_sim.
 ```{r}
 #Random Uncorrelated Data List
 uncor_data_sim<-replicate(100,random_corr_gen(100), simplify = FALSE)
@@ -94,18 +94,24 @@ summary_lm_uncor_tests<-lapply(lm_uncor_tests,summary)
 anova_lm_uncor_tests<-lapply(lm_uncor_tests,anova)
 
 
-sum_pvalue_uncor_tests <- 0
-count_pvalue_uncor_tests <- 0
+sum_pvalue_uncor_nonsig <- 0
+sum_pvalue_uncor_sig <- 0
+count_pvalue_uncor_nonsig <- 0
+count_pvalue_uncor_sig <- 0
 
 for (i in 1:length(anova_lm_uncor_tests)) {
-  if(anova_lm_uncor_tests[[i]][["Pr(>F)"]][1] > 0.05){
-    count_pvalue_uncor_tests <- count_pvalue_uncor_tests + 1
-  sum_pvalue_uncor_tests <- sum_pvalue_uncor_tests + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
-}
+    if(anova_lm_uncor_tests[[i]][["Pr(>F)"]][1] > 0.05){
+      count_pvalue_uncor_nonsig <- count_pvalue_uncor_nonsig + 1
+  sum_pvalue_uncor_nonsig <- sum_pvalue_uncor_nonsig + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
+    } else{
+      count_pvalue_uncor_sig <- count_pvalue_uncor_sig + 1
+  sum_pvalue_uncor_sig <- sum_pvalue_uncor_sig + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
+    }
 }
 
-average_pvalue_uncor_tests <- sum_pvalue_uncor_tests/count_pvalue_uncor_tests
-
+average_pvalue_uncor_tests_nonsig <- sum_pvalue_uncor_nonsig/count_pvalue_uncor_nonsig
+average_pvalue_uncor_tests_sig <- sum_pvalue_uncor_sig/count_pvalue_uncor_sig
+average_pvalue_uncor_tests <- (sum_pvalue_uncor_nonsig + sum_pvalue_uncor_sig)/(count_pvalue_uncor_sig + count_pvalue_uncor_nonsig)
 #TODO -> sum up the pvalues that were less than 0.05
 ```
 Next is the  linar model lm applied to each list of the positively correlated dataset.
@@ -116,18 +122,24 @@ lm_cor_tests<-lapply(cor_data_sim,lm, formula = y1~x1)
 summary_lm_cor_tests<-lapply(lm_cor_tests,summary)
 anova_lm_cor_tests<-lapply(lm_cor_tests,anova)
 
-
-sum_pvalue_cor_tests <- 0
-count_pvalue_cor_tests <- 0
+sum_pvalue_cor_nonsig <- 0
+sum_pvalue_cor_sig <- 0
+count_pvalue_cor_nonsig <- 0
+count_pvalue_cor_sig <- 0
 
 for (i in 1:length(anova_lm_cor_tests)) {
     if(anova_lm_cor_tests[[i]][["Pr(>F)"]][1] > 0.05){
-      count_pvalue_cor_tests <- count_pvalue_cor_tests + 1
-  sum_pvalue_cor_tests <- sum_pvalue_cor_tests + anova_lm_cor_tests[[i]][["Pr(>F)"]][1]
+      count_pvalue_cor_nonsig <- count_pvalue_cor_nonsig + 1
+  sum_pvalue_cor_nonsig <- sum_pvalue_cor_nonsig + anova_lm_cor_tests[[i]][["Pr(>F)"]][1]
+    } else{
+      count_pvalue_cor_sig <- count_pvalue_cor_sig + 1
+  sum_pvalue_cor_sig <- sum_pvalue_cor_sig + anova_lm_cor_tests[[i]][["Pr(>F)"]][1]
     }
 }
 
-average_pvalue_cor_tests <- sum_pvalue_cor_tests/count_pvalue_cor_tests
+average_pvalue_cor_tests_nonsig <- sum_pvalue_cor_nonsig/count_pvalue_cor_nonsig
+average_pvalue_cor_tests_sig <- sum_pvalue_cor_sig/count_pvalue_cor_sig
+average_pvalue_cor_tests <- (sum_pvalue_cor_nonsig + sum_pvalue_cor_sig)/(count_pvalue_cor_sig + count_pvalue_cor_nonsig)
 #TODO -> sum up the pvalues that were less than 0.05
 ```
 There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value of 2.2e-16.
