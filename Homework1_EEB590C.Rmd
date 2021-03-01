@@ -93,11 +93,13 @@ lm_uncor_tests<-lapply(uncor_data_sim,lm, formula = y1 ~ x1)
 summary_lm_uncor_tests<-lapply(lm_uncor_tests,summary)
 anova_lm_uncor_tests<-lapply(lm_uncor_tests,anova)
 
-sum_pvalue_uncor <- sum(lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1], length(anova_lm_uncor_tests[[]])))
+#sum_pvalue_uncor <- sum(lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1], length(anova_lm_uncor_tests[[]])))
 
 #sum_pvalue_uncor <- do.call(sum, anova_lm_uncor_tests[[1]][["Pr(>F)"]][1])
 
-sum_pvalue_uncor <- lapply(unlist(anova_lm_uncor_tests[[]][["Pr(>F)"]][1]),sum)
+#sum_pvalue_uncor <- lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1],sum)
+
+anova_lm_uncor_tests[[names(anova_lm_uncor_tests[])]][["Pr(>F)"]][1]
 
 #TODO -> sum up the pvalues that were less than 0.05
 ```
