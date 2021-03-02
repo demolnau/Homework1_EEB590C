@@ -180,6 +180,13 @@ anova(model3)
 # hist(F.rand.vec,40,freq=T,col="gray")
 # segments(F.obs, 0, F.obs, 50)  ##Plot Observed value
 
+
+
+
+
+
+
+
 #TODO --> make this a nice replcate or apply statement
 ```
 
@@ -189,8 +196,6 @@ Summarize your findings via comments in the code (e.g., which approach was faste
 ```{r}
 #TODO
 #time the two methods of permutations
-
-
 
 # https://www.rdocumentation.org/packages/microbenchmark/versions/1.4-7/topics/microbenchmark
 # https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/system.time
