@@ -99,15 +99,20 @@ for (i in 1:length(anova_lm_uncor_tests)) {
   sum_pvalue_uncor_nonsig <- sum_pvalue_uncor_nonsig + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
     } else{
       count_pvalue_uncor_sig <- count_pvalue_uncor_sig + 1
-      print(i)
+      #print(i)
   sum_pvalue_uncor_sig <- sum_pvalue_uncor_sig + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
     }
 }
 
 average_pvalue_uncor_tests_nonsig <- sum_pvalue_uncor_nonsig/count_pvalue_uncor_nonsig
-average_pvalue_uncor_tests_sig <- sum_pvalue_uncor_sig/count_pvalue_uncor_sig
-average_pvalue_uncor_tests <- (sum_pvalue_uncor_nonsig + sum_pvalue_uncor_sig)/(count_pvalue_uncor_sig + count_pvalue_uncor_nonsig)
+print(paste("Average pvalue less than 0.05 for uncorrelated tests:", average_pvalue_uncor_tests_nonsig))
 
+
+average_pvalue_uncor_tests_sig <- sum_pvalue_uncor_sig/count_pvalue_uncor_sig
+print(paste("Average p-value greater than 0.05 for uncorrelated tests:", average_pvalue_uncor_tests_sig))
+
+average_pvalue_uncor_tests <- (sum_pvalue_uncor_nonsig + sum_pvalue_uncor_sig)/(count_pvalue_uncor_sig + count_pvalue_uncor_nonsig)
+print(paste("Average p-value for all uncorrelated tests:", average_pvalue_uncor_tests))
 ```
 
 Next is the linear model lm applied to each list of the positively correlated dataset. There is evidence of a linear relationship between X and Y at a significance level of 0.05. Of the 100 simulations, X simulations have a pvalue that is less than 0.05.
@@ -137,10 +142,14 @@ for (i in 1:length(anova_lm_cor_tests)) {
     }
 }
 
-average_pvalue_cor_tests_nonsig <- sum_pvalue_cor_nonsig/count_pvalue_cor_nonsig
 average_pvalue_cor_tests_sig <- sum_pvalue_cor_sig/count_pvalue_cor_sig
-average_pvalue_cor_tests <- (sum_pvalue_cor_nonsig + sum_pvalue_cor_sig)/(count_pvalue_cor_sig + count_pvalue_cor_nonsig)
+print(paste("Average pvalue less than 0.05 for correlated tests:", average_pvalue_cor_tests_sig))
 
+average_pvalue_cor_tests_nonsig <- sum_pvalue_cor_nonsig/count_pvalue_cor_nonsig
+print(paste("Average p-value greater than 0.05 for correlated tests:", average_pvalue_cor_tests_nonsig))
+
+average_pvalue_cor_tests <- (sum_pvalue_cor_nonsig + sum_pvalue_cor_sig)/(count_pvalue_cor_sig + count_pvalue_cor_nonsig)
+print(paste("Average p-value for all correlated tests:", average_pvalue_cor_tests))
 ```
 
 There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value less than 0.05.
