@@ -8,6 +8,7 @@ output: pdf_document
 ```{r setup, include=FALSE}
 rm(list=ls()) #remove unwanted variables and start on clear slate
 library(knitr)
+library(microbenchmark)
 knitr::opts_chunk$set(echo = TRUE)
 #install.packages("formatR")
 opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
@@ -105,6 +106,7 @@ for (i in 1:length(anova_lm_uncor_tests)) {
   sum_pvalue_uncor_nonsig <- sum_pvalue_uncor_nonsig + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
     } else{
       count_pvalue_uncor_sig <- count_pvalue_uncor_sig + 1
+      print(i)
   sum_pvalue_uncor_sig <- sum_pvalue_uncor_sig + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
     }
 }
@@ -114,7 +116,7 @@ average_pvalue_uncor_tests_sig <- sum_pvalue_uncor_sig/count_pvalue_uncor_sig
 average_pvalue_uncor_tests <- (sum_pvalue_uncor_nonsig + sum_pvalue_uncor_sig)/(count_pvalue_uncor_sig + count_pvalue_uncor_nonsig)
 #TODO -> sum up the pvalues that were less than 0.05
 ```
-Next is the  linar model lm applied to each list of the positively correlated dataset.
+Next is the  linear model lm applied to each list of the positively correlated dataset.
 
 ```{r}
 #model 2 - positively correlated model
@@ -129,6 +131,7 @@ count_pvalue_cor_sig <- 0
 
 for (i in 1:length(anova_lm_cor_tests)) {
     if(anova_lm_cor_tests[[i]][["Pr(>F)"]][1] > 0.05){
+      print(i)
       count_pvalue_cor_nonsig <- count_pvalue_cor_nonsig + 1
   sum_pvalue_cor_nonsig <- sum_pvalue_cor_nonsig + anova_lm_cor_tests[[i]][["Pr(>F)"]][1]
     } else{
@@ -142,7 +145,7 @@ average_pvalue_cor_tests_sig <- sum_pvalue_cor_sig/count_pvalue_cor_sig
 average_pvalue_cor_tests <- (sum_pvalue_cor_nonsig + sum_pvalue_cor_sig)/(count_pvalue_cor_sig + count_pvalue_cor_nonsig)
 #TODO -> sum up the pvalues that were less than 0.05
 ```
-There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value of 2.2e-16.
+There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value less than 0.05.
 
 #### Question 2: 
 
@@ -186,6 +189,9 @@ Summarize your findings via comments in the code (e.g., which approach was faste
 ```{r}
 #TODO
 #time the two methods of permutations
+
+
+
 # https://www.rdocumentation.org/packages/microbenchmark/versions/1.4-7/topics/microbenchmark
 # https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/system.time
 ```
