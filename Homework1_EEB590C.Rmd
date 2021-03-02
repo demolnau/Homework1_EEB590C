@@ -24,16 +24,15 @@ This assignment is due prior to class in week 6. You are to self-select and work
 2: Devise a permutation procedure to evaluate the above linear model. Write code for this permutation procedure. Next, devise a SECOND implementation of the same permutation procedure (ie, code the procedure in a different manner). For a single dataset compare the two implementations for their computational performance. Summarize your findings via comments in the code (e.g., which approach was faster? Which components of the slower approach could be improved, etc.).
 
 ### Homework Breakdown:
+ 
+We selected lm as a linear model and we simulated two datasets: the first with no relationship between X amd Y, and the second with positive association between X and Y. Here we have the random uncorrelated data, sampling 100 datapoints with y and x from normal distributions. 
 
-Select some form of linear model containing a single dependent variable (continuous) and at least 1 independent variable. Next, simulate two datasets: the first with no relationship between X & Y, and the second with some positive association between X & Y.
 ```{r}
 
 #data set with no relationship between x & Y
 
 random_corr_gen<- function(elements) {
-  set.seed(2) 
   x1<-rnorm(elements, mean = 0, sd = 0.3)# this could also be simply 1:100
-  set.seed(3)
   y1<-rnorm(elements, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
   uncor_dataframe<-data.frame(x1,y1)
 }
@@ -41,12 +40,11 @@ random_corr_gen<- function(elements) {
 uncor_data<-random_corr_gen(100)
 plot(uncor_data,
     main = "Uncorrelated Data",  
-    xlab = "X (Independent Varible)", 
-    ylab = "Y (Dependent Varible)")
+    xlab = "X", 
+    ylab = "Y")
 
-#TODO ADD LABELS AND TITLE TO PLOT
 ```
-
+Here, we have the positively correlated, normally distributed, Y and X data generated using a correlation of 0.9. 
 ```{r}
 #data set with positive association between x & Y
 library(mvtnorm) 
@@ -62,10 +60,9 @@ pos_cor_gen<- function(elements) {
 
 pos_cor_data<-pos_cor_gen(100)
 
-
 ```
 
-Perform 100 simulations under each condition.
+We then perform 100 simulations under each condition using the replicate function.
 
 First we simulate 100 noncorrelated x and y dataframes and put it a list called uncor_data_sim.
 ```{r}
@@ -84,14 +81,18 @@ cor_data_sim<-replicate(100, pos_cor_gen(100), simplify = FALSE)
 #cor_data_sim[[1]][,1] #shows column x of the first list of 100 elements
 ```
 
-Run the linear models on all datasets to confirm that on average, the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met. (HINT: this requires determining an appropriate summary measure extracted from the linear model).
+We then Run the linear model lm on the two datasets (uncorrelated and correlated) to confirm that on average, the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met.
 
-Below is the linear model lm function applied to each list of x and y in the uncorrelated dataset. The summary of the linear model is saved tp summary_lm_uncor_tests.
+Below is the linear model lm function applied to each list of x and y in the uncorrelated dataset. The summary of the linear model is saved to summary_lm_uncor_tests. Of the 100 simulations, a grand total of X simulations had a pvalue more than 0.05, indicating that there is not a linear relationship between X and Y at a significance level of 0.05. 
+
+
 ```{r}
 #model 1 - uncorrelated
 lm_uncor_tests<-lapply(uncor_data_sim,lm, formula = y1 ~ x1)
 summary_lm_uncor_tests<-lapply(lm_uncor_tests,summary)
 anova_lm_uncor_tests<-lapply(lm_uncor_tests,anova)
+#lapply(anova_lm_uncor_tests[[]]$`Pr(>F)` < 0.05)
+
 
 #sum_pvalue_uncor <- sum(lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1], length(anova_lm_uncor_tests[[]])))
 
@@ -103,7 +104,7 @@ anova_lm_uncor_tests[[1]]
 
 #TODO -> sum up the pvalues that were less than 0.05
 ```
-Next is the  linar model lm applied to each list of the positively correlated dataset.
+Next is the linear model lm applied to each list of the positively correlated dataset. There is evidence of a linear relationship between X and Y at a significance level of 0.05. Of the 100 simulations, X simulations have a pvalue that is less than 0.05.
 
 ```{r}
 #model 2 - positively correlated model
@@ -112,49 +113,72 @@ summary_lm_cor_tests<-lapply(lm_cor_tests,summary)
 anova_lm_cor_tests<-lapply(lm_uncor_tests,anova)
 #TODO -> sum up the pvalues that were less than 0.05
 ```
-There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value of 2.2e-16.
+
 #### Question 2: 
 
- Devise a permutation procedure to evaluate the above linear model. Write code for this permutation procedure.
+ The first permutation procedure we used to evaluate the above linear model on the correlated data using the RRPP package.
 ```{r}
 #install.packages("RRPP")
 library(RRPP)
 ourdata<-rrpp.data.frame(pos_cor_data[,2], pos_cor_data[,1])
-model3<-lm.rrpp(pos_cor_data[,2]~pos_cor_data[,1], print.progress = FALSE, data = ourdata)
+model3<-lm.rrpp(pos_cor_data[,2]~pos_cor_data[,1],iter=999, print.progress = FALSE, data = ourdata)
 anova(model3)
 
 ```
 
- Next, devise a SECOND implementation of the same permutation procedure (ie, code the procedure in a different manner). For a single dataset compare the two implementations for their computational performance.
-
+ Next, we devised a SECOND implementation of the same permutation procedure. This time we will write a permutation from scratch for 999 iterations using a for loop. We set the observed data's f value to be one of the iterations.
 ```{r}
-# F.obs<-anova(summary_lm_cor_tests)$F[[1]]  #Find Test value and save
-# permute<-1999
-# F.rand.vec<-array(NA,(permute+1))
-# F.rand.vec[permute+1]<-F.obs
-#  Y = pos_cor_data[,2]
-#  X1 = pos_cor_data[,1]
-# for(i in 1:permute){
-#   ###Shuffle Data
-# 	y.rand<-sample(Y)	#Resample vector 
-# 	F.rand.vec[i]<-anova(lm(y.rand~X1))$F[[1]]  
-# }  
-# F.obs
-# P.Ftest<-rank(F.rand.vec[permute+1])/(permute+1)
-# P.Ftest
-# ####Plot
-# hist(F.rand.vec,40,freq=T,col="gray")
-# segments(F.obs, 0, F.obs, 50)  ##Plot Observed value
+pos_cor_lm<-anova(lm(pos_cor_data$y1 ~ pos_cor_data$x1))
+f.obs<-pos_cor_lm$`Pr(>F)`[1]
+```
+ We then created a function for 999 permutations so that we could later time the operations.
+```{r}
+#Randomization function
 
-#TODO --> make this a nice replcate or apply statement
+permute_correlated_data<-function(correlated_data, permute_num, f.obs.reported){
+  
+  P.1tailed<-P.2tailed<-1
+  f.rand.vec<-array(NA,(permute_num+1))
+  f.rand.vec[permute_num+1]<-f.obs.reported
+
+for(i in 1:permute_num){
+  ###Shuffle Data
+	permuted_cor_data<-sample(correlated_data$y1)
+  ###Run analysis on random data
+	permuted_pos_cor_lm<-anova(lm(permuted_cor_data~correlated_data$x1))
+	f.rand.vec[i]<-permuted_pos_cor_lm$`Pr(>F)`[1]
+}  #end permute
+return(f.rand.vec)
+}
+f_values_of_permuted_pos_data<-permute_correlated_data(pos_cor_data, 999 ,f.obs)
+
+permute<-999
+
+##Significance assessment
+P.1tailed<-length(which(f_values_of_permuted_pos_data<=f_values_of_permuted_pos_data[permute+1])) / (permute+1)  #because observed is negative
+P.2tailed<-length(which(abs(f_values_of_permuted_pos_data)>=abs(f_values_of_permuted_pos_data[permute+1]))) / (permute+1)  
+P.1tailed
+P.2tailed
+####Plot
+hist(f_values_of_permuted_pos_data,20,freq=T,col="gray")
+segments(f.obs, 0, f.obs, 50)  ##Plot Observed value
+
 ```
 
+
+
  
-Summarize your findings via comments in the code (e.g., which approach was faster? Which components of the slower approach could be improved, etc.).
+Below are the times of the two permutation methods. As you can see, RRPP is the superior method when simply comparing the time as well as ease of use. The time of RRPP permuting 999 iterations is reported in milliseconds (~ 156 milliseconds) while the permutation that was written out in a for loop yields results in terms of seconds (average 1.866 seconds).
 
 ```{r}
-#TODO
+
 #time the two methods of permutations
 # https://www.rdocumentation.org/packages/microbenchmark/versions/1.4-7/topics/microbenchmark
-# https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/system.time
+library(microbenchmark)
+res<-microbenchmark(anova(lm.rrpp(pos_cor_data[,2]~pos_cor_data[,1],iter=999, print.progress = FALSE, data = ourdata)),times=1) #using rrpp for permutation method
+print(res)
+
+res2<-microbenchmark(permute_correlated_data(pos_cor_data, 999,f.obs),times = 1)
+print(res2) #second permutation method
+
 ```
