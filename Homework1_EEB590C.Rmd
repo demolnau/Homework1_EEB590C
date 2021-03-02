@@ -32,9 +32,7 @@ Select some form of linear model containing a single dependent variable (continu
 #data set with no relationship between x & Y
 
 random_corr_gen<- function(elements) {
-  #set.seed(2) 
   x1<-rnorm(elements, mean = 0, sd = 0.3)# this could also be simply 1:100
-  #set.seed(3)
   y1<-rnorm(elements, mean = 3, sd = 2) #this could be pulled from any distribution (ie poisson, uniform...)
   uncor_dataframe<-data.frame(x1,y1)
 }
@@ -159,7 +157,7 @@ anova(model3)
 
 ```
 
- Next, devise a SECOND implementation of the same permutation procedure (ie, code the procedure in a different manner). For a single dataset compare the two implementations for their computational performance.
+Next, devise a SECOND implementation of the same permutation procedure (ie, code the procedure in a different manner). For a single dataset compare the two implementations for their computational performance.
 
 ```{r}
 # F.obs<-anova(summary_lm_cor_tests)$F[[1]]  #Find Test value and save
