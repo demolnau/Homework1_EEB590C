@@ -93,6 +93,9 @@ sum_pvalue_uncor_sig <- 0
 count_pvalue_uncor_nonsig <- 0
 count_pvalue_uncor_sig <- 0
 
+#sum up p-value for uncorrelated tests
+#p-values less than 0.05 have a significant linear relationship
+#p-values greater than 0.05 have a do not significant linear relationship
 for (i in 1:length(anova_lm_uncor_tests)) {
     if(anova_lm_uncor_tests[[i]][["Pr(>F)"]][1] > 0.05){
       count_pvalue_uncor_nonsig <- count_pvalue_uncor_nonsig + 1
@@ -131,6 +134,9 @@ sum_pvalue_cor_sig <- 0
 count_pvalue_cor_nonsig <- 0
 count_pvalue_cor_sig <- 0
 
+#sum up p-value for correlated tests
+#p-values less than 0.05 have a significant linear relationship
+#p-values greater than 0.05 have a do not significant linear relationship
 for (i in 1:length(anova_lm_cor_tests)) {
     if(anova_lm_cor_tests[[i]][["Pr(>F)"]][1] > 0.05){
       print(i)
@@ -152,7 +158,7 @@ average_pvalue_cor_tests <- (sum_pvalue_cor_nonsig + sum_pvalue_cor_sig)/(count_
 print(paste("Average p-value for all correlated tests:", average_pvalue_cor_tests))
 ```
 
-There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value less than 0.05.
+There is a significant linear relationship between x and y for the positively correlated model (model2) with an average p value less than 0.05.
 
 
 #### Question 2: 
