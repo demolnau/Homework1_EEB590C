@@ -8,6 +8,7 @@ output: pdf_document
 ```{r setup, include=FALSE}
 rm(list=ls()) #remove unwanted variables and start on clear slate
 library(knitr)
+library(microbenchmark)
 knitr::opts_chunk$set(echo = TRUE)
 #install.packages("formatR")
 opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
@@ -64,7 +65,7 @@ pos_cor_data<-pos_cor_gen(100)
 
 We then perform 100 simulations under each condition using the replicate function.
 
-First we simulate 100 noncorrelated x and y dataframes and put it a list called uncor_data_sim.
+First we simulate 100 uncorrelated x and y dataframes and put it a list called uncor_data_sim.
 ```{r}
 #Random Uncorrelated Data List
 uncor_data_sim<-replicate(100,random_corr_gen(100), simplify = FALSE)
@@ -94,25 +95,65 @@ anova_lm_uncor_tests<-lapply(lm_uncor_tests,anova)
 #lapply(anova_lm_uncor_tests[[]]$`Pr(>F)` < 0.05)
 
 
-#sum_pvalue_uncor <- sum(lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1], length(anova_lm_uncor_tests[[]])))
 
-#sum_pvalue_uncor <- do.call(sum, anova_lm_uncor_tests[[1]][["Pr(>F)"]][1])
+sum_pvalue_uncor_nonsig <- 0
+sum_pvalue_uncor_sig <- 0
+count_pvalue_uncor_nonsig <- 0
+count_pvalue_uncor_sig <- 0
 
-#sum_pvalue_uncor <- lapply(anova_lm_uncor_tests[[]][["Pr(>F)"]][1],sum)
+for (i in 1:length(anova_lm_uncor_tests)) {
+    if(anova_lm_uncor_tests[[i]][["Pr(>F)"]][1] > 0.05){
+      count_pvalue_uncor_nonsig <- count_pvalue_uncor_nonsig + 1
+  sum_pvalue_uncor_nonsig <- sum_pvalue_uncor_nonsig + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
+    } else{
+      count_pvalue_uncor_sig <- count_pvalue_uncor_sig + 1
+      print(i)
+  sum_pvalue_uncor_sig <- sum_pvalue_uncor_sig + anova_lm_uncor_tests[[i]][["Pr(>F)"]][1]
+    }
+}
 
-anova_lm_uncor_tests[[1]]
-
+average_pvalue_uncor_tests_nonsig <- sum_pvalue_uncor_nonsig/count_pvalue_uncor_nonsig
+average_pvalue_uncor_tests_sig <- sum_pvalue_uncor_sig/count_pvalue_uncor_sig
+average_pvalue_uncor_tests <- (sum_pvalue_uncor_nonsig + sum_pvalue_uncor_sig)/(count_pvalue_uncor_sig + count_pvalue_uncor_nonsig)
 #TODO -> sum up the pvalues that were less than 0.05
 ```
+<<<<<<< HEAD
 Next is the linear model lm applied to each list of the positively correlated dataset. There is evidence of a linear relationship between X and Y at a significance level of 0.05. Of the 100 simulations, X simulations have a pvalue that is less than 0.05.
+=======
+Next is the  linear model lm applied to each list of the positively correlated dataset.
+>>>>>>> ba91a71597a9d85ac995b987b8b384e781d7a8fb
 
 ```{r}
 #model 2 - positively correlated model
 lm_cor_tests<-lapply(cor_data_sim,lm, formula = y1~x1)
 summary_lm_cor_tests<-lapply(lm_cor_tests,summary)
-anova_lm_cor_tests<-lapply(lm_uncor_tests,anova)
+anova_lm_cor_tests<-lapply(lm_cor_tests,anova)
+
+sum_pvalue_cor_nonsig <- 0
+sum_pvalue_cor_sig <- 0
+count_pvalue_cor_nonsig <- 0
+count_pvalue_cor_sig <- 0
+
+for (i in 1:length(anova_lm_cor_tests)) {
+    if(anova_lm_cor_tests[[i]][["Pr(>F)"]][1] > 0.05){
+      print(i)
+      count_pvalue_cor_nonsig <- count_pvalue_cor_nonsig + 1
+  sum_pvalue_cor_nonsig <- sum_pvalue_cor_nonsig + anova_lm_cor_tests[[i]][["Pr(>F)"]][1]
+    } else{
+      count_pvalue_cor_sig <- count_pvalue_cor_sig + 1
+  sum_pvalue_cor_sig <- sum_pvalue_cor_sig + anova_lm_cor_tests[[i]][["Pr(>F)"]][1]
+    }
+}
+
+average_pvalue_cor_tests_nonsig <- sum_pvalue_cor_nonsig/count_pvalue_cor_nonsig
+average_pvalue_cor_tests_sig <- sum_pvalue_cor_sig/count_pvalue_cor_sig
+average_pvalue_cor_tests <- (sum_pvalue_cor_nonsig + sum_pvalue_cor_sig)/(count_pvalue_cor_sig + count_pvalue_cor_nonsig)
 #TODO -> sum up the pvalues that were less than 0.05
 ```
+<<<<<<< HEAD
+=======
+There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value less than 0.05.
+>>>>>>> ba91a71597a9d85ac995b987b8b384e781d7a8fb
 
 #### Question 2: 
 
@@ -126,10 +167,42 @@ anova(model3)
 
 ```
 
+<<<<<<< HEAD
  Next, we devised a SECOND implementation of the same permutation procedure. This time we will write a permutation from scratch for 999 iterations using a for loop. We set the observed data's f value to be one of the iterations.
 ```{r}
 pos_cor_lm<-anova(lm(pos_cor_data$y1 ~ pos_cor_data$x1))
 f.obs<-pos_cor_lm$`Pr(>F)`[1]
+=======
+Next, devise a SECOND implementation of the same permutation procedure (ie, code the procedure in a different manner). For a single dataset compare the two implementations for their computational performance.
+
+```{r}
+# F.obs<-anova(summary_lm_cor_tests)$F[[1]]  #Find Test value and save
+# permute<-1999
+# F.rand.vec<-array(NA,(permute+1))
+# F.rand.vec[permute+1]<-F.obs
+#  Y = pos_cor_data[,2]
+#  X1 = pos_cor_data[,1]
+# for(i in 1:permute){
+#   ###Shuffle Data
+# 	y.rand<-sample(Y)	#Resample vector 
+# 	F.rand.vec[i]<-anova(lm(y.rand~X1))$F[[1]]  
+# }  
+# F.obs
+# P.Ftest<-rank(F.rand.vec[permute+1])/(permute+1)
+# P.Ftest
+# ####Plot
+# hist(F.rand.vec,40,freq=T,col="gray")
+# segments(F.obs, 0, F.obs, 50)  ##Plot Observed value
+
+
+
+
+
+
+
+
+#TODO --> make this a nice replcate or apply statement
+>>>>>>> ba91a71597a9d85ac995b987b8b384e781d7a8fb
 ```
  We then created a function for 999 permutations so that we could later time the operations.
 ```{r}
@@ -173,6 +246,7 @@ Below are the times of the two permutation methods. As you can see, RRPP is the 
 ```{r}
 
 #time the two methods of permutations
+
 # https://www.rdocumentation.org/packages/microbenchmark/versions/1.4-7/topics/microbenchmark
 library(microbenchmark)
 res<-microbenchmark(anova(lm.rrpp(pos_cor_data[,2]~pos_cor_data[,1],iter=999, print.progress = FALSE, data = ourdata)),times=1) #using rrpp for permutation method
