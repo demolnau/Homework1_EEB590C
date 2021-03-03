@@ -94,6 +94,9 @@ sum_pvalue_uncor_sig <- 0
 count_pvalue_uncor_nonsig <- 0
 count_pvalue_uncor_sig <- 0
 
+#sum up p-value for uncorrelated tests
+#p-values less than 0.05 have a significant linear relationship
+#p-values greater than 0.05 have a do not significant linear relationship
 for (i in 1:length(anova_lm_uncor_tests)) {
     if(anova_lm_uncor_tests[[i]][["Pr(>F)"]][1] > 0.05){
       count_pvalue_uncor_nonsig <- count_pvalue_uncor_nonsig + 1
@@ -144,6 +147,9 @@ sum_pvalue_cor_sig <- 0
 count_pvalue_cor_nonsig <- 0
 count_pvalue_cor_sig <- 0
 
+#sum up p-value for correlated tests
+#p-values less than 0.05 have a significant linear relationship
+#p-values greater than 0.05 have a do not significant linear relationship
 for (i in 1:length(anova_lm_cor_tests)) {
     if(anova_lm_cor_tests[[i]][["Pr(>F)"]][1] > 0.05){
       print(i)
