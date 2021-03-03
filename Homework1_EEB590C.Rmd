@@ -74,20 +74,21 @@ Then we simulate 100 lists of the correlated data, called cor_data_sim.
 ```{r}
 #Random Correlated Data List
 cor_data_sim<-replicate(100, pos_cor_gen(100), simplify = FALSE)
-
 ```
 
 We then run the linear model lm on the two datasets (uncorrelated and correlated) to confirm that on average, the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met.
 
-Below is the linear model lm function applied to each list of x and y in the uncorrelated dataset. The summary of the linear model is saved to summary_lm_uncor_tests. Of the 100 simulations, a grand total of X simulations had a pvalue more than 0.05, indicating that there is not a linear relationship between X and Y at a significance level of 0.05. 
-
-
+Below is the linear model lm function applied to each list of x and y in the uncorrelated dataset. The summary of the linear model is saved to summary_lm_uncor_tests. 
 ```{r}
 #model 1 - uncorrelated
 lm_uncor_tests<-lapply(uncor_data_sim,lm, formula = y1 ~ x1)
 summary_lm_uncor_tests<-lapply(lm_uncor_tests,summary)
 anova_lm_uncor_tests<-lapply(lm_uncor_tests,anova)
+```
 
+Of the 100 simulations, a grand total of 97 simulations had a pvalue that was greater than 0.05, indicating that there is NOT a linear relationship between X and Y at a significance level of 0.05. 
+
+```{r}
 sum_pvalue_uncor_nonsig <- 0
 sum_pvalue_uncor_sig <- 0
 count_pvalue_uncor_nonsig <- 0
@@ -104,9 +105,10 @@ for (i in 1:length(anova_lm_uncor_tests)) {
     }
 }
 
+
+
 average_pvalue_uncor_tests_nonsig <- sum_pvalue_uncor_nonsig/count_pvalue_uncor_nonsig
 print(paste("Average pvalue less than 0.05 for uncorrelated tests:", average_pvalue_uncor_tests_nonsig))
-
 
 average_pvalue_uncor_tests_sig <- sum_pvalue_uncor_sig/count_pvalue_uncor_sig
 print(paste("Average p-value greater than 0.05 for uncorrelated tests:", average_pvalue_uncor_tests_sig))
@@ -118,17 +120,25 @@ print(paste("Average p-value for all uncorrelated tests:", average_pvalue_uncor_
 
 ```
 
-Next is the linear model lm applied to each list of the positively correlated dataset. There is evidence of a linear relationship between X and Y at a significance level of 0.05. Of the 100 simulations, X simulations have a pvalue that is less than 0.05.
+```{r}
 
-Next is the  linear model lm applied to each list of the positively correlated dataset.
+#of 100 simulations, the count of that had a nonsignificant p-value 
+count_pvalue_uncor_nonsig
+#of 100 simulations, the count of that had a significant p-value 
+count_pvalue_uncor_sig
 
+```
 
+Next is the linear model lm applied to each list of the positively correlated dataset. 
 ```{r}
 #model 2 - positively correlated model
 lm_cor_tests<-lapply(cor_data_sim,lm, formula = y1~x1)
 summary_lm_cor_tests<-lapply(lm_cor_tests,summary)
 anova_lm_cor_tests<-lapply(lm_cor_tests,anova)
+```
 
+Of the 100 simulations, all 100 simulations have a pvalue that is less than 0.05, indicating that there is a linear relationship between X and Y at a significance level of 0.05. 
+```{r}
 sum_pvalue_cor_nonsig <- 0
 sum_pvalue_cor_sig <- 0
 count_pvalue_cor_nonsig <- 0
@@ -154,12 +164,16 @@ print(paste("Average p-value greater than 0.05 for correlated tests:", average_p
 average_pvalue_cor_tests <- (sum_pvalue_cor_nonsig + sum_pvalue_cor_sig)/(count_pvalue_cor_sig + count_pvalue_cor_nonsig)
 print(paste("Average p-value for all correlated tests:", average_pvalue_cor_tests))
 
-#TODO SUM THE NUMBER OF OCCURENCES WHERE THE PVALUE is LESS THAN 0.05. THIS SHOULD BE A COUNT AND WILL BE AN INTEGER
-
 ```
 
-There is a significant linear relationship between x and y for the positively correlated model (model2) with a p value less than 0.05.
+```{r}
 
+#of 100 simulations for the correlated data, the count of simulations with a nonsignificant p-value
+count_pvalue_cor_nonsig
+#of 100 simulations, the count of simulations with a significant p-value 
+count_pvalue_cor_sig
+
+```
 
 #### Question 2: 
 
