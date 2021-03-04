@@ -46,18 +46,18 @@ plot(uncor_data,
 Here, we have the positively correlated, normally distributed, Y and X data generated using a correlation of 0.9. 
 ```{r}
 #data set with positive association between x & Y
-library(mvtnorm) 
+ 
 library(tidyverse)
 
-corr.val <- .9
-pos_cor_gen<- function(elements) {
-  cor_data<-data.frame(rmvnorm(n=elements,mean=c(0,0),sigma=matrix(c(1,corr.val,corr.val,1),2,2)))
-  names(cor_data)[1]<-"x1"
-  names(cor_data)[2]<- "y1"
+pos_cor_gen<- function(elements, corr.val) {
+  correlation_value<-corr.val
+  x2<-rnorm(elements, mean = 0, sd = 0.3)
+  y2<-(correlation_value)*(x2)+(rnorm(elements, mean = 1, sd = 0.2))
+  cor_data<-data.frame(x2,y2)
   return(cor_data)
 }
 
-pos_cor_data<-pos_cor_gen(100)
+pos_cor_data<-pos_cor_gen(100, .9)
 
 ```
 
@@ -73,10 +73,10 @@ uncor_data_sim<-replicate(100,random_corr_gen(100), simplify = FALSE)
 Then we simulate 100 lists of the correlated data, called cor_data_sim.
 ```{r}
 #Random Correlated Data List
-cor_data_sim<-replicate(100, pos_cor_gen(100), simplify = FALSE)
+cor_data_sim<-replicate(100, pos_cor_gen(100, .9), simplify = FALSE)
 ```
 
-We then run the linear model lm on the two datasets (uncorrelated and correlated) to confirm that on average, the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met.
+We then run the linear model lm on the two datasets (uncorrelated and correlated) to confirm tht typically the patterns for condition 1 (no relationship) and condition 2 (some relationship) are met.
 
 Below is the linear model lm function applied to each list of x and y in the uncorrelated dataset. The summary of the linear model is saved to summary_lm_uncor_tests. 
 ```{r}
@@ -86,7 +86,7 @@ summary_lm_uncor_tests<-lapply(lm_uncor_tests,summary)
 anova_lm_uncor_tests<-lapply(lm_uncor_tests,anova)
 ```
 
-Of the 100 simulations, a grand total of 97 simulations had a pvalue that was greater than 0.05, indicating that there is NOT a linear relationship between X and Y at a significance level of 0.05. 
+Of the 100 simulations, a grand total of ~97 simulations had a pvalue that was greater than 0.05, indicating that there is NOT a linear relationship between X and Y at a significance level of 0.05. Because we can't set a seed, the 97 simulations changes slightly every time, but remains about 90 simulations that have a pvalue greater than 0.05.
 
 ```{r}
 sum_pvalue_uncor_nonsig <- 0
@@ -109,17 +109,16 @@ for (i in 1:length(anova_lm_uncor_tests)) {
 }
 
 
-
 average_pvalue_uncor_tests_nonsig <- sum_pvalue_uncor_nonsig/count_pvalue_uncor_nonsig
-print(paste("Average pvalue less than 0.05 for uncorrelated tests:", average_pvalue_uncor_tests_nonsig))
+print(paste("Average pvalue greater than 0.05 for uncorrelated tests:", average_pvalue_uncor_tests_nonsig))
 
 average_pvalue_uncor_tests_sig <- sum_pvalue_uncor_sig/count_pvalue_uncor_sig
-print(paste("Average p-value greater than 0.05 for uncorrelated tests:", average_pvalue_uncor_tests_sig))
+print(paste("Average p-value less than 0.05 for uncorrelated tests:", average_pvalue_uncor_tests_sig))
 
 average_pvalue_uncor_tests <- (sum_pvalue_uncor_nonsig + sum_pvalue_uncor_sig)/(count_pvalue_uncor_sig + count_pvalue_uncor_nonsig)
 print(paste("Average p-value for all uncorrelated tests:", average_pvalue_uncor_tests))
 
-#TODO SUM THE NUMBER OF OCCURENCES WHERE THE PVALUE is LESS THAN 0.05. THIS SHOULD BE A COUNT AND WILL BE AN INTEGER
+
 
 ```
 
@@ -135,7 +134,7 @@ count_pvalue_uncor_sig
 Next is the linear model lm applied to each list of the positively correlated dataset. 
 ```{r}
 #model 2 - positively correlated model
-lm_cor_tests<-lapply(cor_data_sim,lm, formula = y1~x1)
+lm_cor_tests<-lapply(cor_data_sim,lm, formula = y2~x2)
 summary_lm_cor_tests<-lapply(lm_cor_tests,summary)
 anova_lm_cor_tests<-lapply(lm_cor_tests,anova)
 ```
@@ -152,7 +151,6 @@ count_pvalue_cor_sig <- 0
 #p-values greater than 0.05 have a do not significant linear relationship
 for (i in 1:length(anova_lm_cor_tests)) {
     if(anova_lm_cor_tests[[i]][["Pr(>F)"]][1] > 0.05){
-      print(i)
       count_pvalue_cor_nonsig <- count_pvalue_cor_nonsig + 1
   sum_pvalue_cor_nonsig <- sum_pvalue_cor_nonsig + anova_lm_cor_tests[[i]][["Pr(>F)"]][1]
     } else{
@@ -193,43 +191,36 @@ anova(model3)
 
 ```
 
- Next, we devised a SECOND implementation of the same permutation procedure. This time we will write a permutation from scratch for 999 iterations using a for loop. We set the observed data's f value to be one of the iterations.
+ Next, we devised a SECOND implementation of a permutation procedure. This time we will write a permutation from scratch for 999 iterations using a for loop. We set the observed data's f value to be one of the iterations.
 ```{r}
-pos_cor_lm<-anova(lm(pos_cor_data$y1 ~ pos_cor_data$x1))
-f.obs<-pos_cor_lm$`Pr(>F)`[1]
+pos_cor_lm<-anova(lm(pos_cor_data$y2 ~ pos_cor_data$x2))
+f.obs<-pos_cor_lm$`F value`[[1]]
+f.obs
 ```
 
- We then created a function for 999 permutations so that we could later time the operations.
+ We then created a function for 999 permutations + our observed (1000 total). This function can later be called when comparing the time it takes for a for loop versus RRPP.
 ```{r}
 #Randomization function
 
 permute_correlated_data<-function(correlated_data, permute_num, f.obs.reported){
-  
-  P.1tailed<-P.2tailed<-1
+
   f.rand.vec<-array(NA,(permute_num+1))
   f.rand.vec[permute_num+1]<-f.obs.reported
 
 for(i in 1:permute_num){
   ###Shuffle Data
-	permuted_cor_data<-sample(correlated_data$y1)
+	permuted_cor_data<-sample(correlated_data$y2)
   ###Run analysis on random data
-	permuted_pos_cor_lm<-anova(lm(permuted_cor_data~correlated_data$x1))
-	f.rand.vec[i]<-permuted_pos_cor_lm$`Pr(>F)`[1]
+	permuted_pos_cor_lm<-anova(lm(permuted_cor_data~correlated_data$x2))
+	f.rand.vec[i]<-permuted_pos_cor_lm$`F value`[[1]]
 }  #end permute
-return(f.rand.vec)
+
+P.Ftest<-rank(f.rand.vec[permute_num+1])/(permute_num+1)
+return(P.Ftest)
 }
-f_values_of_permuted_pos_data<-permute_correlated_data(pos_cor_data, 999 ,f.obs)
 
-permute<-999
-
-##Significance assessment
-P.1tailed<-length(which(f_values_of_permuted_pos_data<=f_values_of_permuted_pos_data[permute+1])) / (permute+1)  #because observed is negative
-P.2tailed<-length(which(abs(f_values_of_permuted_pos_data)>=abs(f_values_of_permuted_pos_data[permute+1]))) / (permute+1)  
-P.1tailed
-P.2tailed
-####Plot
-hist(f_values_of_permuted_pos_data,20,freq=T,col="gray")
-segments(f.obs, 0, f.obs, 50)  ##Plot Observed value
+p_value_of_permuted_pos_data<-permute_correlated_data(pos_cor_data, 999 ,f.obs)
+p_value_of_permuted_pos_data
 
 ```
 
